@@ -1,0 +1,10 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.htc.zion.demoapp.MainActivity">
+    <item
+        android:id="@+id/action_clear_seed"
+        android:orderInCategory="100"
+        android:title="@string/action_clear_seed"
+        app:showAsAction="never" />
+</menu>
