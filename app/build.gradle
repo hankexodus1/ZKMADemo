@@ -58,4 +58,7 @@ dependencies {
 
     implementation 'com.google.code.gson:gson:2.8.6'
     implementation(name:'HtcWalletSDK-Htc_partner1-release', ext:'aar')
+    implementation 'com.github.komputing.kethereum:model:0.82.4'
+    implementation 'com.github.komputing.kethereum:crypto:0.82.4'
+    implementation 'com.github.komputing.kethereum:crypto_impl_spongycastle:0.82.4'
 }
