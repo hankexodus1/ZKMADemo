@@ -104,8 +104,9 @@ class FirstFragment : Fragment() {
                         val photoData = EthereumJsonTemplate(Message(bitmapHash))
                         Log.i(LOG_TAG, "EthereumJson=$photoData")
                         val sig = ByteArrayHolder()
+                        val uniqueId = Utils.getZkmaSdkUniqueId(this.requireContext())
                         val result = ZkmaSdkHelper.signMessage(
-                            Utils.getZkmaSdkUniqueId(this.requireContext()),
+                            uniqueId,
                             COIN_TYPE_ETHEREUM,
                             Gson().toJson(photoData),
                             sig
@@ -113,6 +114,15 @@ class FirstFragment : Fragment() {
                         Log.i(
                             LOG_TAG,
                             "signMessage(), result=$result, sig=${sig.byteArray.toString()}"
+                        )
+                        val verified = ZkmaSdkHelper.verifyEthMsgSignature(
+                            uniqueId,
+                            bitmapHash,
+                            sig.byteArray
+                        )
+                        Log.i(
+                            LOG_TAG,
+                            "verifyEthMsgSignature(), verified=$verified"
                         )
                     }
                 }

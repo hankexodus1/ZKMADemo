@@ -6,7 +6,12 @@ import androidx.annotation.WorkerThread
 import com.htc.htcwalletsdk.Export.HtcWalletSdkManager
 import com.htc.htcwalletsdk.Export.RESULT
 import com.htc.htcwalletsdk.Native.Type.ByteArrayHolder
+import com.htc.htcwalletsdk.Utils.GenericUtils
 import java.util.concurrent.atomic.AtomicBoolean
+import org.kethereum.crypto.signedMessageToKey
+import org.kethereum.model.SignatureData
+import java.lang.NumberFormatException
+import java.security.SignatureException
 
 class ZkmaSdkHelper {
 
@@ -78,6 +83,31 @@ class ZkmaSdkHelper {
         ): Int {
             if (!zkmaSdkInited.get()) throw RuntimeException("ZKMA not initialized!")
             return zkmaManager.signMessage(uniqueId, coinType, strJson, byteArrayHolder)
+        }
+
+        @WorkerThread
+        @Synchronized
+        fun verifyEthMsgSignature(
+            uniqueId: Long,
+            message: String,
+            signatureBytes: ByteArray
+        ): Boolean {
+            if (!zkmaSdkInited.get()) throw RuntimeException("ZKMA not initialized!")
+            var verified = false
+            try {
+                val signature = GenericUtils.byteArrayToHex(signatureBytes)
+                val r = signature.slice(0..63).toBigInteger(16)
+                val s = signature.slice(64..127).toBigInteger(16)
+                val v = signature.slice(128..129).toBigInteger()
+                val signatureData = SignatureData(r, s, v)
+                val msgPubKey = signedMessageToKey(message.toByteArray(), signatureData).key
+                val tzPubKey = zkmaManager.getSendPublicKey(uniqueId, 60).key
+                    .substringAfter("0x").toBigInteger(16)
+                verified = tzPubKey == msgPubKey
+            } catch (e: Exception) {
+                Log.e(Utils.LOG_TAG, e.message, e)
+            }
+            return verified
         }
     }
 }
