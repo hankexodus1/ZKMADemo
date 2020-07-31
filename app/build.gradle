@@ -60,5 +60,7 @@ dependencies {
     implementation(name:'HtcWalletSDK-Htc_partner1-release', ext:'aar')
     implementation 'com.github.komputing.kethereum:model:0.82.4'
     implementation 'com.github.komputing.kethereum:crypto:0.82.4'
+    implementation 'com.github.komputing.kethereum:crypto_api:0.82.4'
     implementation 'com.github.komputing.kethereum:crypto_impl_spongycastle:0.82.4'
+    implementation 'com.github.komputing.kethereum:extensions_kotlin:0.82.4'
 }

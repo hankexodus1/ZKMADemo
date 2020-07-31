@@ -12,6 +12,7 @@ import androidx.fragment.app.Fragment
 import com.google.android.material.snackbar.Snackbar
 import com.google.gson.Gson
 import com.htc.htcwalletsdk.Native.Type.ByteArrayHolder
+import com.htc.htcwalletsdk.Utils.GenericUtils
 import com.htc.zion.demoapp.Utils.Companion.LOG_TAG
 import com.htc.zion.demoapp.Utils.Companion.convertToHex
 import com.htc.zion.demoapp.Utils.Companion.sha256
@@ -100,8 +101,9 @@ class FirstFragment : Fragment() {
                         bitmap.convertToHex()
                     }?.let { bitmapHex ->
                         bitmapHex.sha256()
-                    }?.let { bitmapHash ->
-                        val photoData = EthereumJsonTemplate(Message(bitmapHash))
+                    }?.let { msg ->
+                        val msgHex = GenericUtils.byteArrayToHex(msg.toByteArray())
+                        val photoData = EthereumJsonTemplate(Message(msgHex))
                         Log.i(LOG_TAG, "EthereumJson=$photoData")
                         val sig = ByteArrayHolder()
                         val uniqueId = Utils.getZkmaSdkUniqueId(this.requireContext())
@@ -117,7 +119,7 @@ class FirstFragment : Fragment() {
                         )
                         val verified = ZkmaSdkHelper.verifyEthMsgSignature(
                             uniqueId,
-                            bitmapHash,
+                            msg,
                             sig.byteArray
                         )
                         Log.i(
