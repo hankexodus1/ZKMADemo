@@ -7,11 +7,15 @@ import com.htc.htcwalletsdk.Export.HtcWalletSdkManager
 import com.htc.htcwalletsdk.Export.RESULT
 import com.htc.htcwalletsdk.Native.Type.ByteArrayHolder
 import com.htc.htcwalletsdk.Utils.GenericUtils
+import org.kethereum.crypto.CURVE
 import java.util.concurrent.atomic.AtomicBoolean
 import org.kethereum.crypto.signedMessageToKey
+import org.kethereum.extensions.toBigInteger
+import org.kethereum.extensions.toBytesPadded
+import org.kethereum.extensions.toHexStringZeroPadded
+import org.kethereum.model.PUBLIC_KEY_SIZE
 import org.kethereum.model.SignatureData
-import java.lang.NumberFormatException
-import java.security.SignatureException
+import java.math.BigInteger
 
 class ZkmaSdkHelper {
 
@@ -96,18 +100,33 @@ class ZkmaSdkHelper {
             var verified = false
             try {
                 val signature = GenericUtils.byteArrayToHex(signatureBytes)
+                Log.d(Utils.LOG_TAG, "signature: $signature")
                 val r = signature.slice(0..63).toBigInteger(16)
                 val s = signature.slice(64..127).toBigInteger(16)
-                val v = signature.slice(128..129).toBigInteger()
+                val v = signature.slice(128..129).toBigInteger(16)
                 val signatureData = SignatureData(r, s, v)
-                val msgPubKey = signedMessageToKey(message.toByteArray(), signatureData).key
+                val signedMsgBytes = message.toByteArray().let {
+                    "\u0019Ethereum Signed Message:\n${it.size}".toByteArray() + it
+                }
+                val msgPubKey = compressKey(signedMessageToKey(signedMsgBytes, signatureData).key)
+                val msgPubKeyHex = msgPubKey.toHexStringZeroPadded(66, false)
+                Log.d(Utils.LOG_TAG, "msgPubKey: $msgPubKeyHex")
                 val tzPubKey = zkmaManager.getSendPublicKey(uniqueId, 60).key
-                    .substringAfter("0x").toBigInteger(16)
+                    .toBigInteger(16)
+                val tzPubKeyHex = tzPubKey.toHexStringZeroPadded(66, false)
+                Log.d(Utils.LOG_TAG, "tzPubKey: $tzPubKeyHex")
                 verified = tzPubKey == msgPubKey
             } catch (e: Exception) {
                 Log.e(Utils.LOG_TAG, e.message, e)
             }
             return verified
+        }
+
+        fun compressKey(publicKey: BigInteger): BigInteger {
+            val ret = publicKey.toBytesPadded(PUBLIC_KEY_SIZE + 1)
+            ret[0] = 4
+            val point = CURVE.decodePoint(ret)
+            return point.encoded(true).toBigInteger()
         }
     }
 }
